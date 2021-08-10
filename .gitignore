@@ -19,5 +19,7 @@ build/
 data/
 dist/
 
+Квитанции.pdf
 Инструкция.txt
+~$people.xlsx
 *.pkl
