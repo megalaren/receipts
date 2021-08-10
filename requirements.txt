@@ -1,0 +1,9 @@
+altgraph==0.17
+et-xmlfile==1.0.1
+fpdf==1.7.2
+future==0.18.2
+openpyxl==3.0.7
+pefile==2019.4.18
+pyinstaller==4.2
+pyinstaller-hooks-contrib==2021.1
+pywin32-ctypes==0.2.0
