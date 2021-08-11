@@ -2,13 +2,13 @@
 Создание pdf-квитанций на основе excel-таблицы
 ### Для создания квитанций:
 - Отредактируйте excel-файл "people.xlsx"
-  ![alt text](screenshots/people.png "")
+  ![alt text](screenshots/people.PNG)
 - В файле "people.xlsx" на листе "Настройки" укажите необходимые значения.
    Не забудьте сохранить изменения после редактирования файла
-  ![alt text](screenshots/settings.png)
+  ![alt text](screenshots/settings.PNG)
 - Запустите файл ```main.py```.
 - Если всё хорошо, то в папке должен появиться pdf-файл "Квитанции"
-  ![alt text](screenshots/receipt.png)
+  ![alt text](screenshots/receipt.PNG)
 - Если возникнет ошибка, то в открывшемся окне терминала появится описание ошибки
 ### Для создания исполняемого файла:
 - Активируйте виртуальное окружение проекта:  
