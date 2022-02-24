@@ -10,7 +10,7 @@ from models import *
 BASE_DIRECTORY = os.getcwd()
 DATE_FORMAT = '%d.%m.%Y'
 NOW = dt.datetime.today()
-FILE_NAME_PEOPLE = 'people.xlsx'
+FILE_NAME_PEOPLE = 'Расчет взносов.xlsx'
 SHEET_NAME_PEOPLE = 'Люди'
 SHEET_NAME_CUSTOMIZATION = 'Настройки'
 PATH_TO_PEOPLE = os.path.join(BASE_DIRECTORY, FILE_NAME_PEOPLE)
@@ -18,6 +18,7 @@ PATH_TO_PEOPLE = os.path.join(BASE_DIRECTORY, FILE_NAME_PEOPLE)
 HEIGHT = 4
 PAGE_HEIGHT = 275
 PAGE_WIDTH = 180
+CELL_WIDTH = int(PAGE_WIDTH / 5)
 TOP_MARGIN = 10
 LEFT_MARGIN = 15
 BOTTOM_MARGIN = 10
@@ -101,36 +102,32 @@ def main():
 
         for box in person.boxes:
             pdf.cell(PAGE_WIDTH, HEIGHT, f'Гараж № {box.number}', 0, 1, 'L', )
-            pdf.cell(int(PAGE_WIDTH / 3), HEIGHT, 'Начислено членских взносов', 1, 0, 'C', )
-            pdf.cell(int(PAGE_WIDTH / 3), HEIGHT, 'Оплачено', 1, 0, 'C', )
-            pdf.cell(int(PAGE_WIDTH / 3), HEIGHT, 'Задолженность', 1, 1, 'C', )
-            pdf.cell(int(PAGE_WIDTH / 6), HEIGHT, 'Год', 1, 0, 'C', )
-            pdf.cell(int(PAGE_WIDTH / 6), HEIGHT, 'Сумма', 1, 0, 'C', )
-            pdf.cell(int(PAGE_WIDTH / 6), HEIGHT, 'Дата', 1, 0, 'C', )
-            pdf.cell(int(PAGE_WIDTH / 6), HEIGHT, 'Сумма', 1, 0, 'C', )
-            pdf.cell(int(PAGE_WIDTH / 6), HEIGHT, 'Срок оплаты', 1, 0, 'C', )
-            pdf.cell(int(PAGE_WIDTH / 6), HEIGHT, 'Сумма', 1, 1, 'C', )
+            pdf.cell(CELL_WIDTH * 2, HEIGHT, 'Начислено членских взносов', 1, 0, 'C', )
+            pdf.cell(CELL_WIDTH, HEIGHT, 'Оплачено', 1, 0, 'C', )
+            pdf.cell(CELL_WIDTH * 2, HEIGHT, 'Задолженность', 1, 1, 'C', )
+            pdf.cell(CELL_WIDTH, HEIGHT, 'Год', 1, 0, 'C', )
+            pdf.cell(CELL_WIDTH, HEIGHT, 'Сумма', 1, 0, 'C', )
+            pdf.cell(CELL_WIDTH, HEIGHT, 'Сумма', 1, 0, 'C', )
+            pdf.cell(CELL_WIDTH, HEIGHT, 'Срок оплаты', 1, 0, 'C', )
+            pdf.cell(CELL_WIDTH, HEIGHT, 'Сумма', 1, 1, 'C', )
 
             for accrual in box.accruals:
-                pdf.cell(int(PAGE_WIDTH / 6), HEIGHT, str(accrual.year), 1, 0, 'C', )
-                pdf.cell(int(PAGE_WIDTH / 6), HEIGHT, str(accrual.accrued), 1, 0, 'C', )
-                pdf.cell(int(PAGE_WIDTH / 6), HEIGHT, accrual.payment_date, 1, 0, 'C', )
+                pdf.cell(CELL_WIDTH, HEIGHT, str(accrual.year), 1, 0, 'C', )
+                pdf.cell(CELL_WIDTH, HEIGHT, str(accrual.accrued), 1, 0, 'C', )
 
                 if accrual.payment_amount == 0:
                     payment_amount = ''
                 else:
                     payment_amount = str(accrual.payment_amount)
-                pdf.cell(int(PAGE_WIDTH / 6), HEIGHT, payment_amount, 1, 0, 'C', )
-                due_date = accrual.due_date.strftime(DATE_FORMAT)
-                pdf.cell(int(PAGE_WIDTH / 6), HEIGHT, due_date, 1, 0, 'C', )
-                pdf.cell(int(PAGE_WIDTH / 6), HEIGHT, str(accrual.debt), 1, 1, 'C', )
+                pdf.cell(CELL_WIDTH, HEIGHT, payment_amount, 1, 0, 'C', )
+                pdf.cell(CELL_WIDTH, HEIGHT, accrual.due_date, 1, 0, 'C', )
+                pdf.cell(CELL_WIDTH, HEIGHT, str(accrual.debt), 1, 1, 'C', )
             pdf.cell(20, h=HEIGHT, ln=1)
 
         pdf.cell(PAGE_WIDTH, HEIGHT, f'Всего начислено: {person.get_sum_accrued()} руб.', 0, 1, 'R', )
-        sum_overdue_debt = person.get_sum_overdue_debt(customization['Дата формирования'])
-        pdf.cell(PAGE_WIDTH, HEIGHT, f'Всего просроченная задолженность: {sum_overdue_debt} руб.', 0, 1, 'R', )
         sum_debt = str(person.get_sum_debt())
-        pdf.cell(PAGE_WIDTH, HEIGHT, f'К уплате по сроку {person.get_last_due_date()}г.: {sum_debt} руб', 0, 1, 'R', )
+        pdf.cell(PAGE_WIDTH, HEIGHT, f'Всего задолженность: {sum_debt} руб.', 0, 1, 'R', )
+
         pdf.cell(20, h=HEIGHT, ln=1)
         pdf.multi_cell(PAGE_WIDTH, HEIGHT, customization['Последняя строка'], border=0, align='L')
 
@@ -175,7 +172,7 @@ def get_people(wb):
                 raise ValueError(f'В строке {ind_row} неправильный формат номера бокса')
             box = Box(number=number)
             try:
-                name = row[ind_name].title()
+                name = row[ind_name].replace('\n', ' ').title()
             except (ValueError, TypeError, AttributeError):
                 raise ValueError(f'В строке {ind_row} неправильный формат ФИО')
             if name not in people:
@@ -187,12 +184,13 @@ def get_people(wb):
                     else:
                         raise ValueError(f'В строке {ind_row} неправильный формат номера телефона')
                 try:
-                    address = str(row[ind_address])
-                except (ValueError, TypeError):
-                    if row[ind_address] is None:
+                    address = row[ind_address]
+                    if address is None:
                         address = ''
                     else:
-                        raise ValueError(f'В строке {ind_row} неправильный формат адреса')
+                        address = str(row[ind_address]).replace('\n', ' ')
+                except (ValueError, TypeError):
+                    raise ValueError(f'В строке {ind_row} неправильный формат адреса')
                 person = People(name=name, address=address, phone=phone)
                 people[name] = person
             people[name].boxes.append(box)
@@ -209,17 +207,6 @@ def get_people(wb):
         except (ValueError, TypeError):
             continue
 
-        payment_date = row[ind_payment_date]
-        if payment_date is None:
-            payment_date = ''
-        elif type(payment_date) == dt.datetime:
-            payment_date = payment_date.strftime(DATE_FORMAT)
-        else:
-            try:
-                payment_date = str(payment_date)
-            except (ValueError, TypeError):
-                raise ValueError(f'В строке {ind_row} неправильный формат даты оплаты')
-
         payment_amount = row[ind_payment_amount]
         try:
             payment_amount = int(float(payment_amount))
@@ -230,10 +217,14 @@ def get_people(wb):
                 raise ValueError(f'В строке {ind_row} неправильный формат суммы оплаты')
 
         due_date = row[ind_due_date]
-        if type(due_date) != dt.datetime:
+        if due_date is None:
+            due_date = ''
+        elif type(due_date) == dt.datetime:
+            due_date = due_date.strftime(DATE_FORMAT)
+        else:
             try:
-                due_date = dt.datetime.strptime(due_date, DATE_FORMAT).date()
-            except (ValueError, TypeError, AttributeError):
+                due_date = str(due_date)
+            except (ValueError, TypeError):
                 raise ValueError(f'В строке {ind_row} неправильный формат даты срока оплаты')
 
         debt = row[ind_debt]
@@ -245,8 +236,8 @@ def get_people(wb):
             else:
                 raise ValueError(f'В строке {ind_row} неправильный формат суммы задолженности')
 
-        accrual = Accrual(year=year, accrued=accrued, payment_date=payment_date,
-                          payment_amount=payment_amount, due_date=due_date, debt=debt)
+        accrual = Accrual(
+            year=year, accrued=accrued, payment_amount=payment_amount, due_date=due_date, debt=debt)
         people[name].boxes[-1].accruals.append(accrual)
 
     return people

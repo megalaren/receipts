@@ -4,8 +4,9 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
+             pathex=['D:\\Dev\\receipts'],
              binaries=[],
-             datas=[('DejaVuSansCondensed.ttf', '.'), ],
+             datas=[('DejaVuSansCondensed.ttf', '.')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -14,7 +15,7 @@ a = Analysis(['main.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
-a.datas += [('logo.png','logo.png','DATA')]
+a.datas += [('logo.png','D:\\Dev\\receipts\\logo.png','DATA')]
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
@@ -23,7 +24,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='Создать квитанции',
+          name='main',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -31,4 +32,4 @@ exe = EXE(pyz,
           upx_exclude=[],
           runtime_tmpdir=None,
           console=True,
-          icon='icon.ico',)
+          icon='D:\\Dev\\receipts\\icon.ico')
