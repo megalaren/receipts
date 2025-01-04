@@ -3,9 +3,18 @@ import sys
 
 from fpdf import FPDF
 from openpyxl import load_workbook
+from openpyxl.styles.fills import PatternFill
 
 from models import *
 
+# Compatibility with Planmaker (https://forum.softmaker.com/viewtopic.php?t=27252)
+original_init = PatternFill.__init__
+
+def new_init(self, *args, **kwargs):
+    kwargs.pop('extLst', None)
+    original_init(self, *args, **kwargs)
+
+PatternFill.__init__ = new_init
 
 BASE_DIRECTORY = os.getcwd()
 DATE_FORMAT = '%d.%m.%Y'
